@@ -1,64 +1,80 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
-	"sync"
+	"net/http"
+	"sort"
 	"time"
-
-	"github.com/affordmedtest/Campus-Evaluation-BE/notification-app-be/models"
-	"github.com/affordmedtest/Campus-Evaluation-BE/notification-app-be/utils"
 )
 
-type NotificationService struct {
-	mu            sync.Mutex
-	notifications map[string]models.Notification
-	nextID        int64
+type Notification struct {
+	ID        string `json:"id"`
+	Type      string `json:"type"`
+	Message   string `json:"message"`
+	Timestamp string `json:"timestamp"`
 }
 
-func NewNotificationService() *NotificationService {
-	return &NotificationService{
-		notifications: make(map[string]models.Notification),
-		nextID:        1,
-	}
+type priorityInboxResponse struct {
+	Notifications []Notification `json:"notifications"`
 }
 
-func (service *NotificationService) Create(request models.Notification) models.Notification {
-	service.mu.Lock()
-	defer service.mu.Unlock()
-
-	id := fmt.Sprintf("n%d", service.nextID)
-	service.nextID++
-
-	notification := models.Notification{
-		ID:        id,
-		UserID:    request.UserID,
-		Title:     request.Title,
-		Message:   request.Message,
-		CreatedAt: time.Now().Format(time.RFC3339),
+func GetPriorityInbox(topN int, bearerToken string) ([]Notification, error) {
+	if bearerToken == "" {
+		return nil, fmt.Errorf("missing bearer token")
 	}
 
-	service.notifications[id] = notification
-	utils.Log("backend", "info", "service", "Stored notification "+id+" in memory")
-	return notification
-}
+	request, err := http.NewRequest("GET", "http://4.224.186.213/evaluation-service/priority-inbox", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
 
-func (service *NotificationService) GetByID(id string) (models.Notification, bool) {
-	service.mu.Lock()
-	defer service.mu.Unlock()
+	request.Header.Set("Authorization", "Bearer "+bearerToken)
 
-	notification, exists := service.notifications[id]
-	return notification, exists
-}
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	defer response.Body.Close()
 
-func (service *NotificationService) GetByUserID(userID string) []models.Notification {
-	service.mu.Lock()
-	defer service.mu.Unlock()
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("external service returned status %d", response.StatusCode)
+	}
 
-	var result []models.Notification
-	for _, notification := range service.notifications {
-		if notification.UserID == userID {
-			result = append(result, notification)
+	var wrapper priorityInboxResponse
+	if err := json.NewDecoder(response.Body).Decode(&wrapper); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	weightMap := map[string]int{
+		"Placement": 3,
+		"Result":    2,
+		"Event":     1,
+	}
+
+	sort.Slice(wrapper.Notifications, func(i, j int) bool {
+		weightI := weightMap[wrapper.Notifications[i].Type]
+		weightJ := weightMap[wrapper.Notifications[j].Type]
+		if weightI != weightJ {
+			return weightI > weightJ
 		}
+
+		timeI, errI := time.Parse("2006-01-02 15:04:05", wrapper.Notifications[i].Timestamp)
+		timeJ, errJ := time.Parse("2006-01-02 15:04:05", wrapper.Notifications[j].Timestamp)
+		if errI == nil && errJ == nil {
+			return timeI.After(timeJ)
+		}
+		return wrapper.Notifications[i].Timestamp > wrapper.Notifications[j].Timestamp
+	})
+
+	if topN <= 0 {
+		return nil, fmt.Errorf("topN must be positive")
 	}
-	return result
+
+	if topN > len(wrapper.Notifications) {
+		return wrapper.Notifications, nil
+	}
+
+	return wrapper.Notifications[:topN], nil
 }
