@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (handler *NotificationHandler) PriorityInbox(context *gin.Context) {
+func GetPriorityInboxHandler(context *gin.Context) {
 	topParameter := context.Query("top")
 	topN := 10
 	if topParameter != "" {
@@ -20,8 +21,14 @@ func (handler *NotificationHandler) PriorityInbox(context *gin.Context) {
 		}
 	}
 
+	log.Printf("Incoming request URL: %s", context.Request.URL.String())
+	log.Printf("Requested top count: %d", topN)
+
 	authorizationHeader := context.GetHeader("Authorization")
-	if authorizationHeader == "" {
+	tokenDetected := authorizationHeader != ""
+	log.Printf("Authorization token detected: %v", tokenDetected)
+
+	if !tokenDetected {
 		utils.Log("backend", "warn", "handler", "Missing Authorization header for priority inbox")
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "missing authorization header"})
 		return
@@ -43,6 +50,6 @@ func (handler *NotificationHandler) PriorityInbox(context *gin.Context) {
 		return
 	}
 
-	utils.Log("backend", "info", "handler", "Fetched priority inbox with top="+topParameter+" returning "+strconv.Itoa(len(result))+" items")
+	utils.Log("backend", "info", "handler", "Fetched priority inbox with top="+strconv.Itoa(topN)+" returning "+strconv.Itoa(len(result))+" items")
 	context.JSON(http.StatusOK, result)
 }
