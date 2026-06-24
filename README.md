@@ -1,17 +1,21 @@
-git add README.md .gitignore .env go.mod go.sum
-git commit -m "chore: initialize project structure and base configurations"
+# Campus Evaluation BE
 
-git add logging-middleware/
-git commit -m "feat: implement custom logging middleware and health checks"
+Three Go/Gin microservices:
 
-git add notification-app-be/models/ notification-app-be/config/
-git commit -m "feat: define core data structures and environment configuration"
+- **logging-middleware** (port 8083) — Request timing middleware, health check, external log push
+- **notification-app-be** (port 8081) — Priority inbox fetcher with weight + timestamp sorting
+- **vehicle-scheduler-be** (port 8082) — Vehicle and schedule CRUD with in-memory store
 
-git add notification-app-be/services/ notification-app-be/handlers/
-git commit -m "feat: implement in-memory state management and core processing logic"
+## Run
 
-git add notification-app-be/routes/ notification-app-be/main.go
-git commit -m "feat: wire http routes and initialize gin engine"
+```powershell
+cd <service-dir> && go run main.go
+```
 
-git add notification-system-design.md
-git commit -m "docs: draft system architecture and scalability strategies"
+## Services
+
+| Service | Port | Auth | Endpoints |
+|---------|------|------|-----------|
+| logging-middleware | 8083 | Bearer token | GET /health |
+| notification-app-be | 8081 | Bearer token | GET /api/v1/priority-inbox?top=N |
+| vehicle-scheduler-be | 8082 | — | POST /vehicles, GET /vehicles, POST /schedules |

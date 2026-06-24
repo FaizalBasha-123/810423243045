@@ -1,6 +1,6 @@
 # Vehicle Scheduler BE
 
-A Gin microservice for managing vehicles and schedules with an in-memory store.
+Gin microservice on port 8082. Manages vehicles and schedules with in-memory store.
 
 ## Endpoints
 

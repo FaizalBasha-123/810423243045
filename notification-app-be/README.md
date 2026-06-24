@@ -1,12 +1,15 @@
 # Notification App BE
 
-A Gin microservice that manages notifications with an in-memory store.
+Gin microservice on port 8081. Fetches priority inbox from external API with weight-based and timestamp sorting.
 
 ## Endpoints
 
-- `POST /notifications` — Create a notification
-- `GET /notifications/:id` — Get a notification by ID
-- `GET /notifications/user/:userID` — Get all notifications for a user
+- `GET /api/v1/priority-inbox?top=N` — Returns top N sorted notifications
+
+## Sorting
+
+1. By type weight: Placement (3) > Result (2) > Event (1)
+2. By timestamp (newest first) when weights tie
 
 ## Run
 

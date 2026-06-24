@@ -1,14 +1,14 @@
 # Logging Middleware Service
 
-A standalone Gin microservice that provides a custom HTTP request logging middleware.
+Gin microservice on port 8083. Logs request duration per endpoint and pushes structured logs to external evaluation server.
 
 ## Endpoints
 
-- `GET /health` — Health check
+- `GET /health` — Health check (triggers external log)
 
 ## Middleware
 
-The `Logger` middleware in `middleware/logger.go` measures request duration and logs the method, path, client IP, and time taken using the standard `log` package.
+Logger in `middleware/logger.go` measures and logs method, path, client IP, and duration.
 
 ## Run
 

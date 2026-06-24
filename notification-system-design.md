@@ -2,34 +2,34 @@
 
 ## Stage 1
 
-*Your answer for Stage 1 goes here.*
+Logging middleware service on port 8083 with health check and request timing middleware.
 
 ---
 
 ## Stage 2
 
-*Your answer for Stage 2 goes here.*
+Notification CRUD service on port 8081 with in-memory store.
 
 ---
 
 ## Stage 3
 
-*Your answer for Stage 3 goes here.*
+Vehicle scheduler service on port 8082 with vehicle and schedule management.
 
 ---
 
 ## Stage 4
 
-*Your answer for Stage 4 goes here.*
+External auth and logging integration via AuthenticateClient() and Log().
 
 ---
 
 ## Stage 5
 
-*Your answer for Stage 5 goes here.*
+Priority inbox endpoint with external API fetch, weight-based sorting (Placement > Result > Event), and timestamp tie-breaker.
 
 ---
 
 ## Stage 6
 
-*Your answer for Stage 6 goes here.*
+Refactored to standalone handler under /api/v1/priority-inbox with stdlib-only service layer.
