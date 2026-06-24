@@ -90,8 +90,8 @@ func Log(stack string, level string, packageName string, message string) {
 	defer response.Body.Close()
 
 	if response.StatusCode == 200 {
-		fmt.Println("\n[✅ LOCAL SUCCESS] Log successfully pushed to Affordmed Database!")
+		fmt.Println("\n[LOCAL SUCCESS] Log successfully pushed to Affordmed Database!")
 	} else {
-		fmt.Printf("\n[❌ LOCAL ERROR] Affordmed rejected the log. Status Code: %d\n", response.StatusCode)
+		fmt.Printf("\n[LOCAL ERROR] Affordmed rejected the log. Status Code: %d\n", response.StatusCode)
 	}
 }
