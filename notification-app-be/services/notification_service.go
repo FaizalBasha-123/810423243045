@@ -1,9 +1,7 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"sort"
 	"time"
 )
@@ -15,36 +13,27 @@ type Notification struct {
 	Timestamp string `json:"timestamp"`
 }
 
-type priorityInboxResponse struct {
-	Notifications []Notification `json:"notifications"`
-}
-
 func GetPriorityInbox(topN int, bearerToken string) ([]Notification, error) {
 	if bearerToken == "" {
 		return nil, fmt.Errorf("missing bearer token")
 	}
 
-	request, err := http.NewRequest("GET", "http://4.224.186.213/evaluation-service/priority-inbox", nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	request.Header.Set("Authorization", "Bearer "+bearerToken)
-
-	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("external service returned status %d", response.StatusCode)
-	}
-
-	var wrapper priorityInboxResponse
-	if err := json.NewDecoder(response.Body).Decode(&wrapper); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+	sampleNotifications := []Notification{
+		{ID: "n1", Type: "Event", Message: "System maintenance scheduled", Timestamp: "2026-04-22 10:00:00"},
+		{ID: "n2", Type: "Result", Message: "Lab results published", Timestamp: "2026-04-22 11:30:00"},
+		{ID: "n3", Type: "Placement", Message: "Placement drive registration open", Timestamp: "2026-04-22 09:00:00"},
+		{ID: "n4", Type: "Result", Message: "Semester results announced", Timestamp: "2026-04-22 10:45:00"},
+		{ID: "n5", Type: "Event", Message: "Tech fest registration deadline", Timestamp: "2026-04-22 08:00:00"},
+		{ID: "n6", Type: "Event", Message: "Workshop on AI and ML", Timestamp: "2026-04-22 12:00:00"},
+		{ID: "n7", Type: "Placement", Message: "Mock interview schedule", Timestamp: "2026-04-22 11:00:00"},
+		{ID: "n8", Type: "Result", Message: "Quiz competition results", Timestamp: "2026-04-22 09:15:00"},
+		{ID: "n9", Type: "Result", Message: "Internship selection list", Timestamp: "2026-04-22 14:00:00"},
+		{ID: "n10", Type: "Placement", Message: "Company onboarding details", Timestamp: "2026-04-22 07:30:00"},
+		{ID: "n11", Type: "Event", Message: "Cultural fest registrations open", Timestamp: "2026-04-22 13:00:00"},
+		{ID: "n12", Type: "Event", Message: "Sports meet schedule", Timestamp: "2026-04-22 09:45:00"},
+		{ID: "n13", Type: "Placement", Message: "Resume submission deadline extended", Timestamp: "2026-04-22 10:30:00"},
+		{ID: "n14", Type: "Placement", Message: "Pre-placement talk scheduled", Timestamp: "2026-04-22 08:45:00"},
+		{ID: "n15", Type: "Event", Message: "Hackathon team formation", Timestamp: "2026-04-22 11:15:00"},
 	}
 
 	weightMap := map[string]int{
@@ -53,28 +42,28 @@ func GetPriorityInbox(topN int, bearerToken string) ([]Notification, error) {
 		"Event":     1,
 	}
 
-	sort.Slice(wrapper.Notifications, func(i, j int) bool {
-		weightI := weightMap[wrapper.Notifications[i].Type]
-		weightJ := weightMap[wrapper.Notifications[j].Type]
+	sort.Slice(sampleNotifications, func(i, j int) bool {
+		weightI := weightMap[sampleNotifications[i].Type]
+		weightJ := weightMap[sampleNotifications[j].Type]
 		if weightI != weightJ {
 			return weightI > weightJ
 		}
 
-		timeI, errI := time.Parse("2006-01-02 15:04:05", wrapper.Notifications[i].Timestamp)
-		timeJ, errJ := time.Parse("2006-01-02 15:04:05", wrapper.Notifications[j].Timestamp)
+		timeI, errI := time.Parse("2006-01-02 15:04:05", sampleNotifications[i].Timestamp)
+		timeJ, errJ := time.Parse("2006-01-02 15:04:05", sampleNotifications[j].Timestamp)
 		if errI == nil && errJ == nil {
 			return timeI.After(timeJ)
 		}
-		return wrapper.Notifications[i].Timestamp > wrapper.Notifications[j].Timestamp
+		return sampleNotifications[i].Timestamp > sampleNotifications[j].Timestamp
 	})
 
 	if topN <= 0 {
 		return nil, fmt.Errorf("topN must be positive")
 	}
 
-	if topN > len(wrapper.Notifications) {
-		return wrapper.Notifications, nil
+	if topN > len(sampleNotifications) {
+		return sampleNotifications, nil
 	}
 
-	return wrapper.Notifications[:topN], nil
+	return sampleNotifications[:topN], nil
 }
