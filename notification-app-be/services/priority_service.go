@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"time"
 
 	"github.com/affordmedtest/Campus-Evaluation-BE/notification-app-be/models"
 	"github.com/affordmedtest/Campus-Evaluation-BE/notification-app-be/utils"
@@ -50,7 +51,18 @@ func GetPriorityInbox(topN int, bearerToken string) ([]models.Notification, erro
 	}
 
 	sort.Slice(result, func(i, j int) bool {
-		return weightMap[result[i].Type] > weightMap[result[j].Type]
+		weightI := weightMap[result[i].Type]
+		weightJ := weightMap[result[j].Type]
+		if weightI != weightJ {
+			return weightI > weightJ
+		}
+
+		timeI, errI := time.Parse(time.RFC3339, result[i].Timestamp)
+		timeJ, errJ := time.Parse(time.RFC3339, result[j].Timestamp)
+		if errI == nil && errJ == nil {
+			return timeI.After(timeJ)
+		}
+		return result[i].Timestamp > result[j].Timestamp
 	})
 
 	if len(result) > topN {
