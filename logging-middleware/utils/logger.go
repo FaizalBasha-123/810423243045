@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -87,4 +88,10 @@ func Log(stack string, level string, packageName string, message string) {
 		return
 	}
 	defer response.Body.Close()
+
+	if response.StatusCode == 200 {
+		fmt.Println("\n[✅ LOCAL SUCCESS] Log successfully pushed to Affordmed Database!")
+	} else {
+		fmt.Printf("\n[❌ LOCAL ERROR] Affordmed rejected the log. Status Code: %d\n", response.StatusCode)
+	}
 }

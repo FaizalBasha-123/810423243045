@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/affordmedtest/Campus-Evaluation-BE/logging-middleware/utils"
 
@@ -9,8 +10,10 @@ import (
 )
 
 func HealthCheck(context *gin.Context) {
-	utils.Log("backend", "info", "handler", "Health check endpoint accessed")
+	utils.Log("backend", "info", "handler", "Manual health check triggered by Postman")
+
 	context.JSON(http.StatusOK, gin.H{
-		"status": "ok",
+		"status":    "UP",
+		"timestamp": time.Now().Format(time.RFC3339),
 	})
 }
