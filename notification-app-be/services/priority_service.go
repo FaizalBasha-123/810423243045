@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/affordmedtest/Campus-Evaluation-BE/notification-app-be/models"
 	"github.com/affordmedtest/Campus-Evaluation-BE/notification-app-be/utils"
@@ -41,6 +42,16 @@ func GetPriorityInbox(topN int, bearerToken string) ([]models.Notification, erro
 		utils.Log("backend", "error", "service", "Failed to decode priority inbox response: "+err.Error())
 		return nil, err
 	}
+
+	weightMap := map[string]int{
+		"Placement": 3,
+		"Result":    2,
+		"Event":     1,
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return weightMap[result[i].Type] > weightMap[result[j].Type]
+	})
 
 	if len(result) > topN {
 		result = result[:topN]
