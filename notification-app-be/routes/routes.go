@@ -18,7 +18,6 @@ func SetupRouter() *gin.Engine {
 		notificationGroup.POST("", notificationHandler.CreateNotification)
 		notificationGroup.GET("/:id", notificationHandler.GetNotification)
 		notificationGroup.GET("/user/:userID", notificationHandler.GetUserNotifications)
-		notificationGroup.GET("/priority-inbox", notificationHandler.PriorityInbox)
 	}
 
 	return router

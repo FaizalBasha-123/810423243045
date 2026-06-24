@@ -34,7 +34,7 @@ func (service *NotificationService) Create(request models.Notification) models.N
 		UserID:    request.UserID,
 		Title:     request.Title,
 		Message:   request.Message,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().Format(time.RFC3339),
 	}
 
 	service.notifications[id] = notification

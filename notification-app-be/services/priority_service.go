@@ -15,7 +15,7 @@ func GetPriorityInbox(topN int, bearerToken string) ([]models.Notification, erro
 	}
 
 	baseURL := "http://4.224.186.213"
-	request, err := http.NewRequest("GET", baseURL+"/evaluation-service/priority-inbox?top="+fmt.Sprintf("%d", topN), nil)
+	request, err := http.NewRequest("GET", baseURL+"/evaluation-service/priority-inbox", nil)
 	if err != nil {
 		utils.Log("backend", "error", "service", "Failed to create priority inbox request: "+err.Error())
 		return nil, err
@@ -40,6 +40,10 @@ func GetPriorityInbox(topN int, bearerToken string) ([]models.Notification, erro
 	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
 		utils.Log("backend", "error", "service", "Failed to decode priority inbox response: "+err.Error())
 		return nil, err
+	}
+
+	if len(result) > topN {
+		result = result[:topN]
 	}
 
 	return result, nil
